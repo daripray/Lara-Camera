@@ -9,8 +9,10 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Validation\ValidationException;
+use Filament\Notifications\Notification;
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['name', 'email', 'is_admin', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -28,5 +30,30 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // User ID 1 Selalu Admin
+        static::saving(function (User $user){
+            if($user->id === 1){
+                $user->is_admin = true;
+            }
+        });
+
+        static::deleting(function(User $user){
+            if($user->id === 1){
+               Notification::make()
+                    ->title('Akses Ditolak')
+                    ->body('User Admin utama tidak boleh dihapus.')
+                    ->danger()
+                    ->send();
+
+                throw ValidationException::withMessages([
+                    'delete' => 'User Admin utama tidak boleh dihapus.',
+                ]);
+            }
+        });
+
     }
 }
