@@ -35,15 +35,15 @@ class User extends Authenticatable
     protected static function booted(): void
     {
         // User ID 1 Selalu Admin
-        static::saving(function (User $user){
-            if($user->id === 1){
+        static::saving(function (User $user) {
+            if ($user->id === 1) {
                 $user->is_admin = true;
             }
         });
 
-        static::deleting(function(User $user){
-            if($user->id === 1){
-               Notification::make()
+        static::deleting(function (User $user) {
+            if ($user->id === 1) {
+                Notification::make()
                     ->title('Akses Ditolak')
                     ->body('User Admin utama tidak boleh dihapus.')
                     ->danger()
@@ -55,5 +55,10 @@ class User extends Authenticatable
             }
         });
 
+    }
+
+    public function devices()
+    {
+        return $this->hasMany(Device::class);
     }
 }
