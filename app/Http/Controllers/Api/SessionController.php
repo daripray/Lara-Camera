@@ -15,10 +15,8 @@ class SessionController extends Controller
             'token' => ['required'],
         ]);
 
-        $device = Device::where(
-            'token',
-            $request->token
-        )->firstOrFail();
+        $device = Device::where('token', $request->token)
+            ->firstOrFail();
 
         $device->update([
             'last_seen_at' => now(),
@@ -44,9 +42,7 @@ class SessionController extends Controller
             'session_id' => ['required'],
         ]);
 
-        $session = CameraSession::findOrFail(
-            $request->session_id
-        );
+        $session = CameraSession::findOrFail($request->session_id);
 
         $session->update([
             'ended_at' => now(),

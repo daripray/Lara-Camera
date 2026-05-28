@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\CameraSession;
 use App\Services\FrameStorageService;
 use Illuminate\Http\Request;
+use App\Models\Device;
 
 class FrameController extends Controller
 {
     public function upload(
-        Request $request,
+        Request             $request,
         FrameStorageService $storageService
-    ) {
+    )
+    {
 
         $request->validate([
             'token' => ['required'],
@@ -22,20 +24,11 @@ class FrameController extends Controller
             'motion_score' => ['nullable'],
         ]);
 
-        $device = Device::where(
-            'token',
-            $request->token
-        )
+        $device = Device::where('token', $request->token)
             ->firstOrFail();
 
-        $session = CameraSession::where(
-            'id',
-            $request->session_id
-        )
-            ->where(
-                'device_id',
-                $device->id
-            )
+        $session = CameraSession::where('id', $request->session_id)
+            ->where('device_id', $device->id)
             ->firstOrFail();
 
         $device->update([
@@ -46,7 +39,10 @@ class FrameController extends Controller
             session: $session,
             file: $request->file('frame'),
             capturedAt: $request->captured_at,
-            motionScore: $request->motion_score
+
+            motionScore: $request->filled('motion_score')
+                ? (float)$request->motion_score
+                : null
         );
 
         return response()->json([
